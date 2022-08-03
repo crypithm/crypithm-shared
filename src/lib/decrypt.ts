@@ -4,6 +4,9 @@ import { encode, decode } from "base64-arraybuffer";
 import { decode as decodeURLb64 } from "url-safe-base64";
 
 export async function documentLoaded(pathname: string): Promise<object> {
+    if(pathname.split("/")[1]=="" || pathname.split("/")[1].length!=10 || pathname.split("/")[2]==""){
+        window.location.href="https://crypithm.com"
+    }
   var Form = new FormData();
   var dec = new TextDecoder();
   Form.append("id", pathname.split("/")[1]);
@@ -12,11 +15,18 @@ export async function documentLoaded(pathname: string): Promise<object> {
     body: Form,
   });
 
+  if(resp["Message"]=="QueryError"){
+    window.location.href="https://crypithm.com"
+  }
+
   var jsn = await resp.json();
   var returnData = {};
   var nameBinary = decode(jsn.Name);
   var fileKeyBinary = decode(jsn.Key);
   var keyBinary = decode(decodeURLb64(pathname.split("/")[2]));
+  if(keyBinary.byteLength!=16){
+    window.location.href="https://crypithm.com"
+  }
   var key = await crypto.subtle.importKey(
     "raw",
     keyBinary,
@@ -24,6 +34,7 @@ export async function documentLoaded(pathname: string): Promise<object> {
     false,
     ["decrypt"]
   );
+
   returnData["Name"] = dec.decode(
     await decryptBlob(
       key,
@@ -126,6 +137,7 @@ async function decryptBlob(
     try{
         return await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, k, data);
     }catch(e){
+        window.location.href="https://crypithm.com"
         console.error(e)
         return Promise.reject(e)
     }
