@@ -35,6 +35,7 @@ function downloadFile(): void {
     display: flex;
     align-items: center;
     color: #fff;
+    font-size: 11pt;
 }
 
 .downloadBtn {
