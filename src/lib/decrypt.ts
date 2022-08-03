@@ -43,8 +43,6 @@ export async function documentLoaded(pathname: string): Promise<object> {
   return returnData;
 }
 
-export async function getChunk(): Promise<void> {}
-
 function calchunk(filelength:number):number {
     var chunkcount:number;
     chunkcount = Math.floor(filelength / (1024 * 1024 * 5));
@@ -125,5 +123,10 @@ async function decryptBlob(
   iv: Uint8Array,
   data: Uint8Array
 ): Promise<Uint8Array> {
-  return await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, k, data);
+    try{
+        return await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, k, data);
+    }catch(e){
+        console.error(e)
+        return Promise.reject(e)
+    }
 }
