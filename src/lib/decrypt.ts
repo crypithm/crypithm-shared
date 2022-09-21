@@ -51,6 +51,7 @@ export async function documentLoaded(pathname: string): Promise<object> {
   returnData["Token"] = jsn.Token;
   returnData["Size"] = jsn.Size;
   returnData["Username"] = jsn.Username;
+  returnData["Rqid"] = jsn.Rqid;
   return returnData;
 }
 
@@ -73,7 +74,6 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
         ["decrypt"]
       );
     var hmc = calchunk(fileDetailJSON["Size"]);
-  
     var totalBlobList:Blob[]=[]
     var intArr :number[]= [0, 1, 2, 3, 4];
     var loops:number = Math.floor(hmc / 5) + (hmc % 5 == 0 ? 0 : 1);
@@ -84,7 +84,8 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
           5242912 * (5 * i + v),
           5242912 * (5 * i + v + 1),
           WillusedfileKey,
-          fileDetailJSON["Size"]
+          fileDetailJSON["Size"],
+          fileDetailJSON["Rqid"]
         ).then((decData) => {
           var respAb = new Uint8Array(decData);
           totalBlobList[5 * i + v] = new Blob([respAb]);
@@ -103,14 +104,15 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
         startrange:number,
         endrange:number,
         fileKey:CryptoKey,
-        fileSize:number
+        fileSize:number,
+        rqid:string
       ):Promise<Uint8Array> {
         return new Promise((resolve) => {
           if (startrange > fileSize) {
             resolve(new Uint8Array())
           } else {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", `${apiBaseURL}/download`);
+            xhr.open("POST", `https://${rqid}.crypithm.com/download`);
             xhr.responseType = "arraybuffer";
             var form = new FormData();
             form.append("token", token);
@@ -137,7 +139,7 @@ async function decryptBlob(
     try{
         return await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, k, data);
     }catch(e){
-        window.location.href="https://crypithm.com"
+        //window.location.href="https://crypithm.com"
         console.error(e)
         return Promise.reject(e)
     }

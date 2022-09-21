@@ -8,7 +8,7 @@ import {
     getMimeFromName
 } from './lib/utils/mime'
 var fileName: string = "",
-    fileMime: string = ""
+    fileMime: string
 var fileURL: string = ""
 var username:string=""
 var showAddition:boolean = false
@@ -33,10 +33,10 @@ async function loaded(url: string) {
     });
     }
 }
-function downloadFile(name:string, link:string): void {
+function downloadFile(): void {
     var tempElem = document.createElement("a");
-    tempElem.download = name;
-    tempElem.href = link;
+    tempElem.download = fileName;
+    tempElem.href = fileURL;
     tempElem.click();
 }
 function magnify(tf:boolean) {
@@ -81,7 +81,7 @@ if(isFullScreen){
           {:else}
           <div class="directDown">
             No Preview Avilable
-            <div class="directDownloadBtn">Download</div>
+            <div class="directDownloadBtn" on:click={downloadFile}>Download</div>
           </div>
           {/if}
           {:else}
