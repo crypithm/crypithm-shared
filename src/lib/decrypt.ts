@@ -64,7 +64,7 @@ function calchunk(filelength:number):number {
     return chunkcount;
   }
 
-export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
+export async function getFileBlob(Filemime:string, fileDetailJSON:object, updateStatus:any) {
 
     var WillusedfileKey = await crypto.subtle.importKey(
         "raw",
@@ -85,7 +85,9 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
           5242912 * (5 * i + v + 1),
           WillusedfileKey,
           fileDetailJSON["Size"],
-          fileDetailJSON["Rqid"]
+          fileDetailJSON["Rqid"],
+          5*i+v,
+          (q:number)=>updateStatus(q)
         ).then((decData) => {
           var respAb = new Uint8Array(decData);
           totalBlobList[5 * i + v] = new Blob([respAb]);
@@ -99,13 +101,16 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
       });
       return URL.createObjectURL(q)
 }
+let fileProgress=[]
     function sendAndDownloadData(
         token:string,
         startrange:number,
         endrange:number,
         fileKey:CryptoKey,
         fileSize:number,
-        rqid:string
+        rqid:string,
+        index:number,
+        changeProgress:(q: number) => any,
       ):Promise<Uint8Array> {
         return new Promise((resolve) => {
           if (startrange > fileSize) {
@@ -118,7 +123,12 @@ export async function getFileBlob(Filemime:string, fileDetailJSON:object) {
             form.append("token", token);
             xhr.setRequestHeader("StartRange", startrange.toString() );
             xhr.setRequestHeader("EndRange", endrange.toString() );
-            xhr.onprogress = (e) => {};
+            xhr.onprogress = (e) => {
+              fileProgress[index] = e.loaded
+              let sum=0;
+              fileProgress.forEach((itm)=>{sum+=itm})
+              changeProgress(sum*100/fileSize)
+            };
             xhr.onloadend = async () => {
               var data = await decryptBlob(
                 fileKey,
